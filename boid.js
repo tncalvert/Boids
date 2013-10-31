@@ -23,15 +23,9 @@ function vector() {
 	this.y = 0;
 }
 
-function pos() {
-	this.vec = new vector();
-	this.getX = function() { return this.vec.x; }
-	this.getY = function() { return this.vec.y; }
-}
-
 function boid() {
 	this.id;
-	this.position = new pos();
+	this.position = new vector();
 	this.velocity = new vector();
 }
 
@@ -101,8 +95,8 @@ function createBoid(xPos, yPos) {
 	var b = new boid();
 	b.id = boidCount;
 	boidCount += 1;
-	b.position.vec.x = xPos;
-	b.position.vec.y = yPos;
+	b.position.x = xPos;
+	b.position.y = yPos;
 
 	boids.push(b);
 }
@@ -118,13 +112,13 @@ function cohesion(b) {
 	var flockCenter = new vector();
 
 	otherBoids.forEach(function (e, i, a) {
-		flockCenter = addVectors(flockCenter, e.position.vec);
+		flockCenter = addVectors(flockCenter, e.position);
 	});
 
 	flockCenter = divideVector(flockCenter, boidCount - 1);
 
 	var adjustmentVector = 
-		multVector((subtractVectors(flockCenter, b.position.vec)), adjusmentAmount);
+		multVector((subtractVectors(flockCenter, b.position)), adjusmentAmount);
 
 	return adjustmentVector;
 }
@@ -140,9 +134,9 @@ function avoidance(b) {
 	var adjustmentVector = new vector();
 
 	otherBoids.forEach(function (e, i, a) {
-		if(vectorMagnitude(subtractVectors(e.position.vec, b.position.vec)) < avoidanceDistance) {
+		if(vectorMagnitude(subtractVectors(e.position, b.position)) < avoidanceDistance) {
 			adjustmentVector = subtractVectors(adjustmentVector, 
-				subtractVectors(e.position.vec, b.position.vec));
+				subtractVectors(e.position, b.position));
 		}
 	});
 
@@ -186,7 +180,7 @@ function moveAllBoids() {
 		e.velocity = addVectors(e.velocity, acceleration);
 		e.velocity = limitVector(e.velocity, boidMaxVelocity, boidMaxVelocity);
 
-		e.position.vec = addVectors(e.position.vec, e.velocity);
+		e.position = addVectors(e.position, e.velocity);
 	});
 
 }
@@ -194,19 +188,19 @@ function moveAllBoids() {
 // Only used when drawing
 // The true position does not wrap
 function wrapBoid(old_pos) {
-	var p = new pos();
-	p.vec.x = old_pos.vec.x;
-	p.vec.y = old_pos.vec.y;
+	var p = new vector();
+	p.x = old_pos.x;
+	p.y = old_pos.y;
 
-	if(old_pos.vec.x > width)
-		p.vec.x = old_pos.vec.x % width;
-	else if(old_pos.vec.x < 0)
-		p.vec.x = width + (old_pos.vec.x % width);
+	if(old_pos.x > width)
+		p.x = old_pos.x % width;
+	else if(old_pos.x < 0)
+		p.x = width + (old_pos.x % width);
 
-	if(old_pos.vec.y > height)
-		p.vec.y = old_pos.vec.y % height;
-	else if(old_pos.vec.y < 0)
-		p.vec.y = height + (old_pos.vec.y % height);
+	if(old_pos.y > height)
+		p.y = old_pos.y % height;
+	else if(old_pos.y < 0)
+		p.y = height + (old_pos.y % height);
 
 	return p;
 }
@@ -215,28 +209,28 @@ function drawBoid(b) {
 
 	// get positions
 	var centerPos = wrapBoid(b.position);
-	var backLeft = new pos();
-	backLeft.vec.x = centerPos.getX() - boidTailOffset;
-	backLeft.vec.y = centerPos.getY() - boidTailOffset;
-	var backRight = new pos();
-	backRight.vec.x = centerPos.getX() - boidTailOffset;
-	backRight.vec.y = centerPos.getY() + boidTailOffset;
-	var head = new pos();
-	head.vec.x = centerPos.getX() + boidHeadOffset;
-	head.vec.y = centerPos.getY();
+	var backLeft = new vector();
+	backLeft.x = centerPos.x - boidTailOffset;
+	backLeft.y = centerPos.y - boidTailOffset;
+	var backRight = new vector();
+	backRight.x = centerPos.x - boidTailOffset;
+	backRight.y = centerPos.y + boidTailOffset;
+	var head = new vector();
+	head.x = centerPos.x + boidHeadOffset;
+	head.y = centerPos.y;
 
 	// get angle
 	var normal_vel = normalizeVector(b.velocity);
 	var angle = Math.atan2(normal_vel.x, normal_vel.y);
 
-	var gradient = ctx.createRadialGradient(centerPos.getX(), centerPos.getY(), boidTailOffset / 2,
-		centerPos.getX(), centerPos.getY(), boidTailOffset);
+	var gradient = ctx.createRadialGradient(centerPos.x, centerPos.y, boidTailOffset / 2,
+		centerPos.x, centerPos.y, boidTailOffset);
 	gradient.addColorStop(0.2, 'rgb(50, 50, 255)');
 	gradient.addColorStop(0.8, 'rgb(75, 75, 255)');
 	ctx.fillStyle = gradient;
 
 	ctx.save();
-	ctx.translate(centerPos.getX(), centerPos.getY());
+	ctx.translate(centerPos.x, centerPos.y);
 	// alter rotation based on direction
 	// otherwise the boids travel backwards
 	// when x and y signs aren't the same
