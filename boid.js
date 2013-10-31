@@ -5,12 +5,14 @@ var canvas;
 var ctx;
 var height; // canvas height and width
 var width;
+var canvasOffset;
 
 var boids;
 var boidCount;
 var boidTailOffset;
 var boidHeadOffset;
 var boidMaxVelocity;
+var boidScatter;
 
 // Settings
 var wrapAroundScreen;
@@ -89,6 +91,17 @@ function limitVector(v, xLimit, yLimit) {
 	v.y = newY * (v.y / Math.abs(v.y));
 
 	return v;
+}
+
+function mouseClick(evt) {
+
+	var pos = {
+		x: evt.pageX - canvasOffset.x,
+		y: evt.pageY - canvasOffset.y
+	};
+
+	boidScatter.count = 0.5 * (1000 / targetTime);
+	boidScatter.pos = pos;
 }
 
 /*
@@ -170,7 +183,7 @@ function alignment(b) {
 
 function confinement(b) {
 
-	var v = new vector;
+	var v = new vector();
 	if(b.position.x < 0)
 		v.x = 10;
 	else if(b.position.x > width)
@@ -183,15 +196,32 @@ function confinement(b) {
 	return v;
 }
 
+function tracking(b, pos) {
+
+	var v = subtractVectors(pos, b.position);
+	v = divideVector(v, 100);
+
+	return v;
+}
+
 function moveAllBoids() {
 
-	var v1, v2, v3;
+	var v1, v2, v3, v4, v5;
+
+	if(boidScatter.scatter)
+		console.log('Scatter from ' + boidScatter.pos.x + ', '  + boidScatter.pos.y);
 
 	boids.forEach(function (e, i, a) {
 		v1 = cohesion(e);
 		v2 = avoidance(e);
 		v3 = alignment(e);
 		v4 = confinement(e);
+		if(boidScatter.count > 0) {
+			v5 = tracking(e, boidScatter.pos);
+			v5 = multVector(v5, -1);
+		}
+		else
+			v5 = new vector();
 
 		v4 = multVector(v4, confineToScreen);
 
@@ -200,12 +230,15 @@ function moveAllBoids() {
 		acceleration = addVectors(acceleration, v2);
 		acceleration = addVectors(acceleration, v3);
 		acceleration = addVectors(acceleration, v4);
+		acceleration = addVectors(acceleration, v5);
 		e.velocity = addVectors(e.velocity, acceleration);
 		e.velocity = limitVector(e.velocity, boidMaxVelocity, boidMaxVelocity);
 
 		e.position = addVectors(e.position, e.velocity);
 	});
 
+	if(boidScatter.count > 0)
+		boidScatter.count -= 1;
 }
 
 // Only used when drawing
@@ -294,11 +327,20 @@ function boidLoop() {
 
 function init() {
 
-	canvas = document.getElementById('boid');
-	ctx = canvas.getContext('2d');
+	canvas = $('#boid');
+	if(typeof canvas[0] == 'undefined')
+		return;
+	ctx = canvas[0].getContext('2d');
 
 	width = $('#boid').width();
 	height = $('#boid').height();
+
+	canvas.on('click', mouseClick);
+
+	canvasOffset = {
+		x: canvas.offset().left,
+		y: canvas.offset().top
+	};
 
 	boids = [];
 	boidCount = 0;
@@ -306,6 +348,13 @@ function init() {
 	boidTailOffset = 5;
 	boidHeadOffset = 12;
 	boidMaxVelocity = 8;
+	boidScatter = {
+		count: 0,
+		pos: {
+			x: 0,
+			y: 0
+		}
+	}
 
 	wrapAroundScreen = false;
 	confineToScreen = 1;
