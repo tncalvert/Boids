@@ -12,6 +12,10 @@ var boidTailOffset;
 var boidHeadOffset;
 var boidMaxVelocity;
 
+// Settings
+var wrapAroundScreen;
+var confineToScreen;
+
 var targetTime = 33; // 30 frames per second
 
 /*
@@ -164,6 +168,21 @@ function alignment(b) {
 	return adjustmentVector;
 }
 
+function confinement(b) {
+
+	var v = new vector;
+	if(b.position.x < 0)
+		v.x = 10;
+	else if(b.position.x > width)
+		v.x = -10;
+	if(b.position.y < 0)
+		v.y = 10;
+	else if(b.position.y > height)
+		v.y = -10;
+
+	return v;
+}
+
 function moveAllBoids() {
 
 	var v1, v2, v3;
@@ -172,11 +191,15 @@ function moveAllBoids() {
 		v1 = cohesion(e);
 		v2 = avoidance(e);
 		v3 = alignment(e);
+		v4 = confinement(e);
+
+		v4 = multVector(v4, confineToScreen);
 
 		var acceleration = new vector();
 		acceleration = addVectors(acceleration, v1);
 		acceleration = addVectors(acceleration, v2);
 		acceleration = addVectors(acceleration, v3);
+		acceleration = addVectors(acceleration, v4);
 		e.velocity = addVectors(e.velocity, acceleration);
 		e.velocity = limitVector(e.velocity, boidMaxVelocity, boidMaxVelocity);
 
@@ -208,7 +231,7 @@ function wrapBoid(old_pos) {
 function drawBoid(b) {
 
 	// get positions
-	var centerPos = wrapBoid(b.position);
+	var centerPos = wrapAroundScreen ? wrapBoid(b.position) : b.position;
 	var backLeft = new vector();
 	backLeft.x = centerPos.x - boidTailOffset;
 	backLeft.y = centerPos.y - boidTailOffset;
@@ -283,6 +306,9 @@ function init() {
 	boidTailOffset = 5;
 	boidHeadOffset = 12;
 	boidMaxVelocity = 8;
+
+	wrapAroundScreen = false;
+	confineToScreen = 1;
 
 	for(var i = 0; i < 50; ++i) {
 		createBoid(width / 2, height / 2);
