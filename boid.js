@@ -126,9 +126,9 @@ function cohesion(b) {
 
 	var flockCenter = new vector();
 
-	boids.forEach(function (e, i, a) {
-		flockCenter = addVectors(flockCenter, e.position);
-	});
+	for(var i = 0; i < boids.length; ++i) {
+		flockCenter = addVectors(flockCenter, boids[i].position);
+	}
 
 	flockCenter = divideVector(flockCenter, boids.length);
 
@@ -144,13 +144,14 @@ function avoidance(b) {
 
 	var adjustmentVector = new vector();
 
-	boids.forEach(function (e, i, a) {
+	for(var i = 0; i < boids.length; ++i) {
+		var e = boids[i];
 		var dist = vectorMagnitude(subtractVectors(e.position, b.position));
 		if(dist > 0 && dist < avoidanceDistance) {
 			adjustmentVector = subtractVectors(adjustmentVector, 
 				subtractVectors(e.position, b.position));
 		}
-	});
+	}
 
 	adjustmentVector = multVector(adjustmentVector, 0.35);
 
@@ -161,9 +162,9 @@ function alignment(b) {
 
 	var adjustmentVector = new vector();
 
-	boids.forEach(function (e, i, a) {
-		adjustmentVector = addVectors(adjustmentVector, e.velocity);
-	});
+	for(var i = 0; i < boids.length; ++i) {
+		adjustmentVector = addVectors(adjustmentVector, boids[i].velocity);
+	}
 
 	adjustmentVector = divideVector(adjustmentVector, boids.length);
 
@@ -309,9 +310,9 @@ function boidLoop() {
 
 	ctx.fillStyle = 'rgb(200, 200, 200)';
 	ctx.fillRect(0, 0, width, height);
-	boids.forEach(function (e, i, a) {
-		drawBoid(e);
-	});
+	for(var i = 0; i < boids.length; ++i) {
+		drawBoid(boids[i]);
+	}
 	moveAllBoids();
 
 	endTime = Date.now();
