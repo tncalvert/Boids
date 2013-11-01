@@ -332,8 +332,8 @@ function init() {
 		return;
 	ctx = canvas[0].getContext('2d');
 
-	width = $('#boid').width();
-	height = $('#boid').height();
+	width = $('#boid')[0].width;
+	height = $('#boid')[0].height;
 
 	canvas.on('click', mouseClick);
 
@@ -376,4 +376,66 @@ function init() {
 	boidLoop();
 }
 
-$(document).ready(function() { init(); });
+/**************************
+ * Code to handle options *
+ **************************/
+
+function changeCanvasOptions() {
+	console.log('caught click')
+	var w = parseInt($('#opt_width').val(), 10);
+	var h = parseInt($('#opt_height').val(), 10);
+
+	console.log(w);
+	console.log(h);
+
+	if(isNaN(w) || isNaN(h)) {
+		$('#opt_size_warning').show();
+		return;
+	}
+
+	$('#opt_size_warning').hide();
+
+	var canvas = $('#boid')[0];
+	var ctx = canvas.getContext('2d');
+	ctx.clearRect(0, 0, width, height);
+
+	width = w;
+	height = h;
+
+	canvas.width = width;
+	canvas.height = height;
+
+}
+
+function edgeCheckboxChanged() {
+
+	var wrap = $('#opt_wrap_edges').is(':checked');
+	var repel = $('#opt_repel_edges').is(':checked');
+
+	if(wrap && repel) {
+		$('#opt_edges_warning').show();
+	} else {
+		$('#opt_edges_warning').hide();
+	}
+
+	wrapAroundScreen = wrap;
+	confineToScreen = repel ? 1 : 0;
+
+}
+
+function optionsInit() {
+	// Hide warnings
+	$('.opt_warning').hide();
+
+	// Canvas options submit button
+	$('#canvas_opt_submit').click(function () { changeCanvasOptions(); });
+
+	// Checking edge checkboxes
+	$('#opt_wrap_edges').change(function () { edgeCheckboxChanged(); });
+	$('#opt_repel_edges').change(function () { edgeCheckboxChanged(); });
+}
+
+$(document).ready(function() { 
+	optionsInit();
+	init(); 
+});

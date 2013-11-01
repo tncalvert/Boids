@@ -7,12 +7,43 @@
 			}
 		</style>
 		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+		<link rel="stylesheet" type="text/css" href="site.css" />
 	</head>
 	<body>
 		<canvas id="boid" width="800" height="700">
-
+			Sorry, your browser doesn't support HTML5 canvas.
 		</canvas>
 
+		<div id="options">
+			<p class="options_header">Options</p>
+			<p class="section_header">Canvas</p>
+			<div class="opt_section">
+				<label>Height:
+					<input id="opt_height" type="text" />
+				</label>
+				<label>Width:
+					<input id="opt_width" type="text" />
+				</label>
+				<p id="opt_size_warning" class="opt_warning">
+					Please make sure that the height and width are valid numbers.
+					Nothing was changed this time. I'd suggest choosing one or the other.
+				</p>
+				<input id="canvas_opt_submit" type="button" value="Apply"/>
+			</div>
+			<p class="section_header">Edges</p>
+			<div class="opt_section">
+				<label>Wrap around edges:
+					<input id="opt_wrap_edges" type="checkbox" />
+				</label>
+				<label>Repel from edges:
+					<input id="opt_repel_edges" type="checkbox" checked />
+				</label>
+				<p id="opt_edges_warning" class="opt_warning">
+					Though these don't actually conflict, having
+					both enabled looks really stupid.
+				</p>
+			</div>
+		</div>
 		<script type="text/javascript" src="boid.js"></script>
 	</body>
 </html>

@@ -1,0 +1,43 @@
+/* CSS for Boid test site */
+
+#options {
+  display: inline-block;
+  width: 20%;
+  height: 700px;
+  vertical-align: top;
+  background-color: #dddddd;
+}
+
+#options .options_header {
+  text-decoration: underline;
+  text-align: center;
+}
+
+#options .section_header {
+  padding-left: 0.25em;
+  margin-top: 0em;
+  margin-bottom: 0em;
+  font-style: italic;
+}
+
+#options .opt_section {
+  padding-left: 0.5em;
+  margin-bottom: 1.5em;
+}
+
+#options label {
+  display: inline-block;
+  min-width: 12em;
+  padding-top: 0.25em;
+  text-align: right;
+}
+
+#options .opt_warning {
+  color: #ff3333;
+}
+
+.opt_section #canvas_opt_submit {
+  margin-top: 0.15em;
+  margin-left: 2em;
+  display: block;
+}
