@@ -21,9 +21,9 @@
 				</label>
 				<p id="opt_size_warning" class="opt_warning">
 					Please make sure that the height and width are valid numbers.
-					Nothing was changed this time. I'd suggest choosing one or the other.
+					Nothing was changed this time.
 				</p>
-				<input id="canvas_opt_submit" type="button" value="Apply"/>
+				<input id="canvas_opt_submit" type="button" value="Apply" />
 			</div>
 			<p class="section_header">Edges</p>
 			<div class="opt_section">
@@ -31,11 +31,11 @@
 					<input id="opt_wrap_edges" type="checkbox" />
 				</label>
 				<label>Repel from edges:
-					<input id="opt_repel_edges" type="checkbox" checked />
+					<input id="opt_repel_edges" type="checkbox" />
 				</label>
 				<p id="opt_edges_warning" class="opt_warning">
 					Though these don't actually conflict, having
-					both enabled looks really stupid.
+					both enabled looks really stupid. I'd suggest choosing one or the other.
 				</p>
 			</div>
 			<p class="section_header">Click</p>
@@ -44,11 +44,21 @@
 					<input id="opt_gen_scatter" type="radio" name="opt_scatter_radio" />
 				</label>
 				<label>Scatter from click point:
-					<input id="opt_target_scatter" type="radio" name="opt_scatter_radio" checked />
+					<input id="opt_target_scatter" type="radio" name="opt_scatter_radio" />
 				</label>
 				<label>Flock toward click point:
 					<input id="opt_target_gather" type="radio" name="opt_scatter_radio" />
 				</label>
+			</div>
+			<p class="section_header">General</p>
+			<div class="opt_section">
+				<label>Boid Count:
+					<input id="opt_boid_count" type="text" />
+				</label>
+				<p id="opt_boid_count_warning" class="opt_warning">
+					Please enter a valid number.
+				</p>
+				<input id="opt_boid_count_submit" type="button" value="Apply" />
 			</div>
 		</div>
 		<script type="text/javascript" src="boid.js"></script>

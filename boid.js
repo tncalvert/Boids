@@ -8,7 +8,6 @@ var width;
 var canvasOffset;
 
 var boids;
-var boidCount;
 var boidTailOffset;
 var boidHeadOffset;
 var boidMaxVelocity;
@@ -19,6 +18,8 @@ var wrapAroundScreen;
 var confineToScreen;
 
 var scatterTypeOnClick; // -1 is away from point, 0 is general scatter, 1 is toward point
+
+var maxBoids;
 
 var targetTime = 33; // 30 frames per second
 
@@ -102,7 +103,7 @@ function mouseClick(evt) {
 		y: evt.pageY - canvasOffset.y
 	};
 
-	boidScatter.count = 0.5 * (1000 / targetTime);
+	boidScatter.count = (1000 / targetTime);
 	boidScatter.pos = pos;
 }
 
@@ -112,8 +113,7 @@ function mouseClick(evt) {
 
 function createBoid(xPos, yPos) {
 	var b = new boid();
-	b.id = boidCount;
-	boidCount += 1;
+	b.id = boids.length;
 	b.position.x = xPos;
 	b.position.y = yPos;
 
@@ -122,7 +122,7 @@ function createBoid(xPos, yPos) {
 
 function cohesion(b) {
 
-	var adjusmentAmount = 0.01;
+	var adjusmentAmount = 0.005;
 
 	var otherBoids = boids.filter(function (e) {
 		return e.id !== b.id;
@@ -134,7 +134,7 @@ function cohesion(b) {
 		flockCenter = addVectors(flockCenter, e.position);
 	});
 
-	flockCenter = divideVector(flockCenter, boidCount - 1);
+	flockCenter = divideVector(flockCenter, boids.length - 1);
 
 	var adjustmentVector = 
 		multVector((subtractVectors(flockCenter, b.position)), adjusmentAmount);
@@ -176,7 +176,7 @@ function alignment(b) {
 		adjustmentVector = addVectors(adjustmentVector, e.velocity);
 	});
 
-	adjustmentVector = divideVector(adjustmentVector, boidCount - 1);
+	adjustmentVector = divideVector(adjustmentVector, boids.length - 1);
 
 	adjustmentVector = divideVector(subtractVectors(adjustmentVector, b.velocity), 8);
 
@@ -225,8 +225,9 @@ function moveAllBoids() {
 		else
 			v5 = new vector();
 
-		if(scatterTypeOnClick === 0)
+		if(boidScatter.count > 0 && scatterTypeOnClick === 0)
 			v1 = multVector(v1, -1);
+
 		v4 = multVector(v4, confineToScreen);
 
 		var acceleration = new vector();
@@ -329,7 +330,27 @@ function boidLoop() {
 	setTimeout(function () { boidLoop(); }, targetTime - (endTime - startTime));
 }
 
-function init() {
+function initValues() {
+	boids = [];
+
+	boidTailOffset = 5;
+	boidHeadOffset = 12;
+	boidMaxVelocity = 6;
+	boidScatter = {
+		count: 0,
+		pos: {
+			x: 0,
+			y: 0
+		}
+	}
+
+	wrapAroundScreen = false;
+	confineToScreen = 1;
+	scatterTypeOnClick = -1;
+	maxBoids = 25;
+}
+
+function initBoids() {
 
 	canvas = $('#boid');
 	if(typeof canvas[0] == 'undefined')
@@ -346,25 +367,7 @@ function init() {
 		y: canvas.offset().top
 	};
 
-	boids = [];
-	boidCount = 0;
-
-	boidTailOffset = 5;
-	boidHeadOffset = 12;
-	boidMaxVelocity = 8;
-	boidScatter = {
-		count: 0,
-		pos: {
-			x: 0,
-			y: 0
-		}
-	}
-
-	wrapAroundScreen = false;
-	confineToScreen = 1;
-	scatterTypeOnClick = -1;
-
-	for(var i = 0; i < 50; ++i) {
+	for(var i = 0; i < maxBoids; ++i) {
 		createBoid(width / 2, height / 2);
 	}
 
@@ -440,26 +443,57 @@ function scatterRadioChanged() {
 		scatterTypeOnClick = -1;
 	else if(targetG)
 		scatterTypeOnClick = 1;
+
+	boidScatter.count = 0;
 }
 
-function optionsInit() {
+function changeBoidCount() {
+	
+	var newCount = parseInt($('#opt_boid_count').val());
+
+	if(isNaN(newCount)) {
+		$('#opt_boid_count_warning').show();
+		return;
+	}
+
+	$('#opt_boid_count_warning').hide();
+
+	maxBoids = newCount;
+}
+
+function initOptions() {
 	// Hide warnings
 	$('.opt_warning').hide();
 
-	// Canvas options submit button
+	// Canvas options submit button and set values for height and width
 	$('#canvas_opt_submit').click(function () { changeCanvasOptions(); });
+	$('#opt_height').val($('#boid')[0].height);
+	$('#opt_width').val($('#boid')[0].width);
 
 	// Checking edge checkboxes
 	$('#opt_wrap_edges').change(function () { edgeCheckboxChanged(); });
 	$('#opt_repel_edges').change(function () { edgeCheckboxChanged(); });
+	$('#opt_wrap_edges').prop('checked', wrapAroundScreen);
+	$('#opt_repel_edges').prop('checked', confineToScreen === 1 ? true : false);
 
 	// Scattering radio buttons
 	$('#opt_gen_scatter').change(function () { scatterRadioChanged(); });
 	$('#opt_target_scatter').change(function () { scatterRadioChanged(); });
 	$('#opt_target_gather').change(function () { scatterRadioChanged(); });
+	if(scatterTypeOnClick === 0)
+		$('#opt_gen_scatter').prop('checked', true);
+	else if(scatterTypeOnClick === -1)
+		$('#opt_target_scatter').prop('checked', true);
+	else if(scatterTypeOnClick === 1)
+		$('#opt_target_gather').prop('checked', true);
+
+	// Boid count
+	$('#opt_boid_count').val(maxBoids);
+	$('#opt_boid_count_submit').click(function () { changeBoidCount(); });
 }
 
 $(document).ready(function() { 
-	optionsInit();
-	init(); 
+	initValues();
+	initOptions();
+	initBoids(); 
 });
