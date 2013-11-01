@@ -18,6 +18,8 @@ var boidScatter;
 var wrapAroundScreen;
 var confineToScreen;
 
+var scatterTypeOnClick; // -1 is away from point, 0 is general scatter, 1 is toward point
+
 var targetTime = 33; // 30 frames per second
 
 /*
@@ -216,13 +218,15 @@ function moveAllBoids() {
 		v2 = avoidance(e);
 		v3 = alignment(e);
 		v4 = confinement(e);
-		if(boidScatter.count > 0) {
+		if(boidScatter.count > 0 && scatterTypeOnClick !== 0) {
 			v5 = tracking(e, boidScatter.pos);
-			v5 = multVector(v5, -1);
+			v5 = multVector(v5, scatterTypeOnClick);
 		}
 		else
 			v5 = new vector();
 
+		if(scatterTypeOnClick === 0)
+			v1 = multVector(v1, -1);
 		v4 = multVector(v4, confineToScreen);
 
 		var acceleration = new vector();
@@ -358,6 +362,7 @@ function init() {
 
 	wrapAroundScreen = false;
 	confineToScreen = 1;
+	scatterTypeOnClick = -1;
 
 	for(var i = 0; i < 50; ++i) {
 		createBoid(width / 2, height / 2);
@@ -423,6 +428,20 @@ function edgeCheckboxChanged() {
 
 }
 
+function scatterRadioChanged() {
+
+	var gen = $('#opt_gen_scatter').is(':checked');
+	var targetS = $('#opt_target_scatter').is(':checked');
+	var targetG = $('#opt_target_gather').is(':checked');
+
+	if(gen)
+		scatterTypeOnClick = 0;
+	else if(targetS)
+		scatterTypeOnClick = -1;
+	else if(targetG)
+		scatterTypeOnClick = 1;
+}
+
 function optionsInit() {
 	// Hide warnings
 	$('.opt_warning').hide();
@@ -433,6 +452,11 @@ function optionsInit() {
 	// Checking edge checkboxes
 	$('#opt_wrap_edges').change(function () { edgeCheckboxChanged(); });
 	$('#opt_repel_edges').change(function () { edgeCheckboxChanged(); });
+
+	// Scattering radio buttons
+	$('#opt_gen_scatter').change(function () { scatterRadioChanged(); });
+	$('#opt_target_scatter').change(function () { scatterRadioChanged(); });
+	$('#opt_target_gather').change(function () { scatterRadioChanged(); });
 }
 
 $(document).ready(function() { 
