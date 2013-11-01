@@ -124,17 +124,13 @@ function cohesion(b) {
 
 	var adjusmentAmount = 0.005;
 
-	var otherBoids = boids.filter(function (e) {
-		return e.id !== b.id;
-	});
-
 	var flockCenter = new vector();
 
-	otherBoids.forEach(function (e, i, a) {
+	boids.forEach(function (e, i, a) {
 		flockCenter = addVectors(flockCenter, e.position);
 	});
 
-	flockCenter = divideVector(flockCenter, boids.length - 1);
+	flockCenter = divideVector(flockCenter, boids.length);
 
 	var adjustmentVector = 
 		multVector((subtractVectors(flockCenter, b.position)), adjusmentAmount);
@@ -146,14 +142,11 @@ function avoidance(b) {
 
 	var avoidanceDistance = 25;
 
-	var otherBoids = boids.filter(function (e) {
-		return e.id !== b.id;
-	});
-
 	var adjustmentVector = new vector();
 
-	otherBoids.forEach(function (e, i, a) {
-		if(vectorMagnitude(subtractVectors(e.position, b.position)) < avoidanceDistance) {
+	boids.forEach(function (e, i, a) {
+		var dist = vectorMagnitude(subtractVectors(e.position, b.position));
+		if(dist > 0 && dist < avoidanceDistance) {
 			adjustmentVector = subtractVectors(adjustmentVector, 
 				subtractVectors(e.position, b.position));
 		}
@@ -166,17 +159,13 @@ function avoidance(b) {
 
 function alignment(b) {
 
-	var otherBoids = boids.filter(function (e) {
-		return e.id !== b.id;
-	});
-
 	var adjustmentVector = new vector();
 
-	otherBoids.forEach(function (e, i, a) {
+	boids.forEach(function (e, i, a) {
 		adjustmentVector = addVectors(adjustmentVector, e.velocity);
 	});
 
-	adjustmentVector = divideVector(adjustmentVector, boids.length - 1);
+	adjustmentVector = divideVector(adjustmentVector, boids.length);
 
 	adjustmentVector = divideVector(subtractVectors(adjustmentVector, b.velocity), 8);
 
@@ -457,6 +446,26 @@ function changeBoidCount() {
 	}
 
 	$('#opt_boid_count_warning').hide();
+
+	if(newCount < boids.length) {
+		boids.length = newCount;
+	} else {
+		var len = boids.length;
+
+		for(var i = 0; i < (newCount - len); ++i) {
+			createBoid(width / 2, height / 2);
+		}
+
+		for(var i = maxBoids; i < boids.length; ++i) {
+			var e = boids[i];
+			var xIsPositive, yIsPositive;
+			xIsPositive = Math.random() > 0.5 ? 1 : -1;
+			yIsPositive = Math.random() > 0.5 ? 1 : -1;
+
+			e.velocity.x = xIsPositive * Math.floor(Math.random() * (5 - 1 + 1) + 1);
+			e.velocity.y = yIsPositive * Math.floor(Math.random() * (5 - 1 + 1) + 1);
+		}
+	}
 
 	maxBoids = newCount;
 }
